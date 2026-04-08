@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Forge">
+<meta name="theme-color" content="#111111">
+<title>Forge — Workout Tracker</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root {
+  --bg: #111111;
+  --bg2: #1a1a1a;
+  --bg3: #222222;
+  --bg4: #2a2a2a;
+  --border: #333333;
+  --border2: #444444;
+  --text: #f0f0f0;
+  --text2: #aaaaaa;
+  --text3: #666666;
+  --orange: #f97316;
+  --orange2: #ea6a0a;
+  --orange-dim: rgba(249,115,22,0.15);
+  --orange-dim2: rgba(249,115,22,0.08);
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.15);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.15);
+  --blue: #3b82f6;
+  --blue-dim: rgba(59,130,246,0.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --nav-h: 64px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; overflow-x: hidden; }
+button { background: none; border: none; cursor: pointer; color: inherit; font: inherit; }
+
+/* NAV */
+#nav { position: fixed; bottom: 0; left: 0; right: 0; height: var(--nav-h); background: var(--bg2); border-top: 1px solid var(--border); display: flex; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: var(--text3); font-size: 10px; font-weight: 500; letter-spacing: 0.3px; transition: color 0.15s; padding-top: 6px; }
+.nav-btn.active { color: var(--orange); }
+.nav-btn svg { width: 22px; height: 22px; }
+
+/* PAGES */
+.page { display: none; min-height: 100vh; padding-bottom: calc(var(--nav-h) + 20px); padding-top: 0; }
+.page.active { display: block; }
+
+/* HEADER */
+.page-header { padding: 56px 16px 16px; display: flex; align-items: center; justify-content: space-between; }
+.page-header h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; }
+.page-title-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+
+/* CARDS */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin: 0 16px 10px; }
+.card-sm { padding: 10px 14px; }
+
+/* BTN */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 18px; border-radius: var(--radius-sm); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; border: none; }
+.btn-primary { background: var(--orange); color: #fff; }
+.btn-primary:active { background: var(--orange2); transform: scale(0.97); }
+.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border2); }
+.btn-secondary:active { background: var(--bg4); transform: scale(0.97); }
+.btn-ghost { background: transparent; color: var(--text2); }
+.btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.btn-sm { padding: 6px 12px; font-size: 13px; }
+.btn-full { width: 100%; }
+.btn-icon { width: 36px; height: 36px; padding: 0; border-radius: 50%; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); display: flex; align-items: center; justify-content: center; }
+
+/* BADGE */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-orange { background: var(--orange-dim); color: var(--orange); }
+.badge-green { background: var(--green-dim); color: var(--green); }
+.badge-red { background: var(--red-dim); color: var(--red); }
+.badge-blue { background: var(--blue-dim); color: var(--blue); }
+
+/* INPUT */
+input[type=text], input[type=number], select, textarea {
+  background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); font-size: 15px; padding: 10px 12px; width: 100%; outline: none;
+  font-family: inherit; appearance: none; -webkit-appearance: none;
+}
+input[type=text]:focus, input[type=number]:focus, select:focus, textarea:focus { border-color: var(--orange); }
+label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 6px; }
+
+/* DIVIDER */
+.divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+/* MODAL */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+.modal-overlay.hidden { display: none; }
+.modal { background: var(--bg2); border-radius: 20px 20px 0 0; width: 100%; max-width: 500px; padding: 20px 20px calc(20px + env(safe-area-inset-bottom)); max-height: 90vh; overflow-y: auto; }
+.modal-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 16px; }
+.modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+/* CHECKBOX SET ROW */
+.set-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.set-row:last-child { border-bottom: none; }
+.set-check { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border2); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: all 0.2s; background: transparent; }
+.set-check.done { background: var(--green); border-color: var(--green); }
+.set-check.done svg { display: block; }
+.set-check svg { display: none; }
+.set-info { flex: 1; }
+.set-label { font-size: 14px; color: var(--text2); }
+.set-values { font-size: 16px; font-weight: 600; }
+.set-edit-btn { color: var(--text3); padding: 6px; }
+
+/* TIMER FLOATING */
+#timer-float { position: fixed; bottom: calc(var(--nav-h) + 12px); left: 50%; transform: translateX(-50%); background: var(--bg2); border: 1px solid var(--border2); border-radius: 40px; padding: 10px 20px; display: flex; align-items: center; gap: 14px; z-index: 150; box-shadow: 0 4px 24px rgba(0,0,0,0.5); transition: all 0.3s; }
+#timer-float.hidden { display: none; }
+#timer-float.active-timer { border-color: var(--orange); }
+#timer-display { font-size: 22px; font-weight: 700; color: var(--orange); min-width: 56px; text-align: center; font-variant-numeric: tabular-nums; }
+.timer-ring { width: 36px; height: 36px; position: relative; flex-shrink: 0; }
+.timer-ring svg { transform: rotate(-90deg); }
+.timer-ring circle { fill: none; stroke: var(--border2); stroke-width: 3; }
+.timer-ring .progress { stroke: var(--orange); stroke-linecap: round; transition: stroke-dashoffset 0.5s linear; }
+
+/* PROGRESS BAR */
+.prog-bar { height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
+.prog-bar-fill { height: 100%; background: var(--orange); border-radius: 2px; transition: width 0.3s; }
+
+/* CALENDAR */
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 0 16px; }
+.cal-day-label { text-align: center; font-size: 11px; color: var(--text3); padding: 4px 0; }
+.cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 13px; cursor: pointer; position: relative; }
+.cal-day.has-workout::after { content: ''; position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--orange); }
+.cal-day.today { font-weight: 700; color: var(--orange); }
+.cal-day.selected { background: var(--orange); color: #fff; }
+.cal-day.selected::after { display: none; }
+.cal-day.other-month { color: var(--text3); }
+
+/* CHART */
+.chart-area { height: 140px; position: relative; }
+.chart-bar-wrap { display: flex; align-items: flex-end; gap: 4px; height: 100%; }
+.chart-bar { flex: 1; background: var(--orange-dim); border-radius: 3px 3px 0 0; min-height: 4px; position: relative; cursor: pointer; transition: background 0.15s; }
+.chart-bar:hover { background: var(--orange-dim2); }
+.chart-bar-fill { background: var(--orange); border-radius: 3px 3px 0 0; position: absolute; bottom: 0; left: 0; right: 0; }
+.chart-bar-pr { background: var(--green); }
+
+/* EXERCISE CARD IN WORKOUT */
+.ex-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); margin: 0 16px 12px; overflow: hidden; }
+.ex-card-header { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; }
+.ex-card.active-ex { border-color: var(--orange); }
+.ex-card-body { padding: 0 16px 14px; }
+.ex-card-type { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+/* STREAK */
+.streak-num { font-size: 48px; font-weight: 800; color: var(--orange); line-height: 1; }
+
+/* TRANSITION CARD */
+.transition-card { background: linear-gradient(135deg, var(--bg2), var(--bg3)); border: 1px solid var(--orange); border-radius: var(--radius); padding: 20px; margin: 0 16px 12px; }
+
+/* SECTION LABEL */
+.section-label { font-size: 12px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; padding: 0 16px; margin: 16px 0 8px; }
+
+/* SCROLLABLE CHIPS */
+.chips-row { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px; scrollbar-width: none; }
+.chips-row::-webkit-scrollbar { display: none; }
+.chip { flex-shrink: 0; padding: 7px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; border: 1px solid var(--border); background: var(--bg2); color: var(--text2); cursor: pointer; }
+.chip.active { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); }
+
+/* SUMMARY STAT */
+.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px; }
+.stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; }
+.stat-label { font-size: 12px; color: var(--text3); margin-bottom: 4px; }
+.stat-val { font-size: 22px; font-weight: 700; }
+.stat-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+/* PR TAG */
+.pr-tag { display: inline-flex; align-items: center; gap: 4px; background: var(--green-dim); color: var(--green); border-radius: 4px; font-size: 11px; font-weight: 700; padding: 2px 6px; margin-left: 6px; }
+
+/* 3-7 cluster row */
+.cluster-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; }
+.cluster-num { width: 32px; height: 32px; border-radius: 50%; background: var(--bg3); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--orange); flex-shrink: 0; }
+.cluster-num.done-cluster { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+.cluster-num.active-cluster { background: var(--orange-dim); border-color: var(--orange); animation: pulse-cluster 1s ease-in-out infinite; }
+@keyframes pulse-cluster { 0%,100%{box-shadow:0 0 0 0 var(--orange-dim)}50%{box-shadow:0 0 0 6px transparent} }
+
+/* EMPTY STATE */
+.empty { text-align: center; padding: 48px 24px; }
+.empty-icon { font-size: 40px; margin-bottom: 12px; color: var(--text3); }
+.empty h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+.empty p { font-size: 14px; color: var(--text2); line-height: 1.5; }
+
+/* TOAST */
+#toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--bg2); border: 1px solid var(--border2); color: var(--text); padding: 10px 18px; border-radius: 30px; font-size: 14px; font-weight: 500; z-index: 999; transition: transform 0.3s; white-space: nowrap; }
+#toast.show { transform: translateX(-50%) translateY(0); }
+
+/* FORM GROUP */
+.form-group { margin-bottom: 14px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* SWITCH */
+.switch-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.switch { width: 44px; height: 26px; background: var(--bg4); border-radius: 13px; position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0; }
+.switch.on { background: var(--orange); }
+.switch-thumb { width: 20px; height: 20px; background: #fff; border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: left 0.2s; }
+.switch.on .switch-thumb { left: 21px; }
+
+/* SETTINGS ROWS */
+.setting-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.setting-label { font-size: 15px; }
+.setting-sub { font-size: 13px; color: var(--text2); margin-top: 1px; }
+.setting-val { font-size: 15px; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+
+/* PROGRAM SCHEDULE DAYS */
+.schedule-day { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.schedule-day:last-child { border-bottom: none; }
+.day-name { font-size: 14px; font-weight: 500; width: 80px; }
+
+/* DRAG HANDLE */
+.drag-handle { color: var(--text3); padding: 4px 8px; cursor: grab; }
+
+/* WORKOUT COMPLETE */
+.complete-hero { text-align: center; padding: 32px 24px 24px; }
+.complete-icon { width: 72px; height: 72px; border-radius: 50%; background: var(--green-dim); border: 2px solid var(--green); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+
+@media (min-width: 500px) {
+  .modal { border-radius: 20px; margin-bottom: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- PAGES -->
+<div id="page-today" class="page active"></div>
+<div id="page-calendar" class="page"></div>
+<div id="page-progress" class="page"></div>
+<div id="page-exercises" class="page"></div>
+<div id="page-settings" class="page"></div>
+
+<!-- BOTTOM NAV -->
+<nav id="nav">
+  <button class="nav-btn active" data-page="today">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+    Today
+  </button>
+  <button class="nav-btn" data-page="calendar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Calendar
+  </button>
+  <button class="nav-btn" data-page="progress">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Progress
+  </button>
+  <button class="nav-btn" data-page="exercises">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Exercises
+  </button>
+  <button class="nav-btn" data-page="settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Settings
+  </button>
+</nav>
+
+<!-- FLOATING TIMER -->
+<div id="timer-float" class="hidden">
+  <div class="timer-ring">
+    <svg width="36" height="36" viewBox="0 0 36 36">
+      <circle cx="18" cy="18" r="15" stroke-width="3" stroke="var(--border2)" fill="none"/>
+      <circle id="timer-ring-progress" cx="18" cy="18" r="15" stroke-width="3" stroke="var(--orange)" fill="none" stroke-linecap="round"
+        stroke-dasharray="94.25" stroke-dashoffset="0" style="transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 0.5s linear"/>
+    </svg>
+  </div>
+  <div id="timer-display">0:00</div>
+  <div style="display:flex;flex-direction:column;gap:4px">
+    <button class="btn btn-sm btn-secondary" style="padding:4px 10px;font-size:12px" onclick="addTime(15)">+15s</button>
+    <button class="btn btn-sm btn-secondary" style="padding:4px 10px;font-size:12px" onclick="addTime(30)">+30s</button>
+  </div>
+  <button class="btn-icon" onclick="skipTimer()" style="background:var(--red-dim);border-color:rgba(239,68,68,0.3);color:var(--red)">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+  </button>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MODALS -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal(event)">
+  <div class="modal" id="modal-content" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// ─── DATA LAYER ───────────────────────────────────────────────────────────────
+const DB = {
+  get(k){try{return JSON.parse(localStorage.getItem('forge_'+k))||null}catch{return null}},
+  set(k,v){localStorage.setItem('forge_'+k,JSON.stringify(v))},
+  getWorkouts(){return this.get('workouts')||{}},
+  setWorkouts(w){this.set('workouts',w)},
+  getPrograms(){return this.get('programs')||[]},
+  setPrograms(p){this.set('programs',p)},
+  getExercises(){return this.get('exercises')||defaultExercises()},
+  setExercises(e){this.set('exercises',e)},
+  getSettings(){return this.get('settings')||{unit:'lbs',barbellWeight:45,autoTimer:true,timerPresets:[30,60,90,120,180]}},
+  setSettings(s){this.set('settings',s)},
+  getPRs(){return this.get('prs')||{}},
+  setPRs(p){this.set('prs',p)},
+  getActiveWorkout(){return this.get('active_workout')||null},
+  setActiveWorkout(w){this.set('active_workout',w)},
+  getSchedule(){return this.get('schedule')||null},
+  setSchedule(s){this.set('schedule',s)},
+};
+
+function defaultExercises(){
+  return [
+    {id:'ex_bench',name:'Bench Press',category:'Chest',equipment:'Barbell'},
+    {id:'ex_squat',name:'Back Squat',category:'Legs',equipment:'Barbell'},
+    {id:'ex_deadlift',name:'Deadlift',category:'Back',equipment:'Barbell'},
+    {id:'ex_ohp',name:'Overhead Press',category:'Shoulders',equipment:'Barbell'},
+    {id:'ex_row',name:'Barbell Row',category:'Back',equipment:'Barbell'},
+    {id:'ex_incline',name:'Incline Press',category:'Chest',equipment:'Barbell'},
+    {id:'ex_pullup',name:'Pull-up',category:'Back',equipment:'Bodyweight'},
+    {id:'ex_dip',name:'Dip',category:'Chest',equipment:'Bodyweight'},
+    {id:'ex_lunge',name:'Lunge',category:'Legs',equipment:'Bodyweight'},
+    {id:'ex_dbcurl',name:'Dumbbell Curl',category:'Arms',equipment:'Dumbbell'},
+    {id:'ex_dbpress',name:'Dumbbell Press',category:'Chest',equipment:'Dumbbell'},
+    {id:'ex_dblateral',name:'Lateral Raise',category:'Shoulders',equipment:'Dumbbell'},
+    {id:'ex_cablerow',name:'Cable Row',category:'Back',equipment:'Cable'},
+    {id:'ex_cablepull',name:'Cable Pulldown',category:'Back',equipment:'Cable'},
+    {id:'ex_cablecurl',name:'Cable Curl',category:'Arms',equipment:'Cable'},
+    {id:'ex_legpress',name:'Leg Press',category:'Legs',equipment:'Cable'},
+    {id:'ex_rdl',name:'Romanian Deadlift',category:'Legs',equipment:'Barbell'},
+    {id:'ex_frontsquat',name:'Front Squat',category:'Legs',equipment:'Barbell'},
+  ];
+}
+
+function uid(){return 'id_'+Math.random().toString(36).slice(2)+Date.now().toString(36)}
+function dateKey(d){return d.toISOString().slice(0,10)}
+function todayKey(){return dateKey(new Date())}
+function fmt(n){return Number(n).toLocaleString('en-US',{maximumFractionDigits:1})}
+function fmtDur(secs){const m=Math.floor(secs/60),s=secs%60;return m+'m '+s+'s'}
+
+// ─── TIMER ────────────────────────────────────────────────────────────────────
+let timerInterval=null, timerTotal=0, timerLeft=0, timerCb=null;
+const circumference=94.25;
+
+function startTimer(secs, cb){
+  clearInterval(timerInterval);
+  timerTotal=secs; timerLeft=secs; timerCb=cb;
+  const fl=document.getElementById('timer-float');
+  fl.classList.remove('hidden'); fl.classList.add('active-timer');
+  renderTimer();
+  timerInterval=setInterval(()=>{
+    timerLeft--;
+    renderTimer();
+    if(timerLeft<=0){
+      clearInterval(timerInterval);
+      vibrateEnd();
+      showToast('Rest complete!');
+      fl.classList.remove('active-timer');
+      fl.classList.add('hidden');
+      if(timerCb) timerCb();
+    }
+  },1000);
+}
+
+function renderTimer(){
+  const pct=timerLeft/timerTotal;
+  const m=Math.floor(timerLeft/60), s=timerLeft%60;
+  document.getElementById('timer-display').textContent=m+':'+(s<10?'0':'')+s;
+  const offset=circumference*(1-pct);
+  document.getElementById('timer-ring-progress').style.strokeDashoffset=offset;
+}
+
+function skipTimer(){
+  clearInterval(timerInterval);
+  document.getElementById('timer-float').classList.add('hidden');
+  document.getElementById('timer-float').classList.remove('active-timer');
+  if(timerCb){timerCb();timerCb=null;}
+}
+
+function addTime(s){timerLeft+=s;renderTimer();}
+function vibrateEnd(){if('vibrate' in navigator)navigator.vibrate([200,100,200]);}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+let toastTO;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTO);
+  toastTO=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+function openModal(html){
+  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+function closeModal(e){
+  if(!e||e.target===document.getElementById('modal-overlay'))
+    document.getElementById('modal-overlay').classList.add('hidden');
+}
+
+// ─── NAV ─────────────────────────────────────────────────────────────────────
+let currentPage='today';
+document.querySelectorAll('.nav-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const page=btn.dataset.page;
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+page).classList.add('active');
+    currentPage=page;
+    renderPage(page);
+  });
+});
+
+function renderPage(page){
+  if(page==='today') renderToday();
+  else if(page==='calendar') renderCalendar();
+  else if(page==='progress') renderProgress();
+  else if(page==='exercises') renderExercises();
+  else if(page==='settings') renderSettings();
+}
+
+// ─── PROGRESSIVE OVERLOAD LOGIC ───────────────────────────────────────────────
+function getProjection(exId, sets, reps){
+  const workouts=DB.getWorkouts();
+  const s=DB.getSettings();
+  const unit=s.unit||'lbs';
+  let lastWeight=null, lastSetsHit=0, lastSetsTotal=0;
+  const keys=Object.keys(workouts).sort().reverse();
+  for(const k of keys){
+    const w=workouts[k];
+    if(!w.exercises) continue;
+    for(const ex of w.exercises){
+      if(ex.id!==exId) continue;
+      if(ex.type==='37'){
+        const done=ex.clusters?.filter(c=>c.done).length||0;
+        if(done===5){lastWeight=ex.weight;lastSetsHit=1;lastSetsTotal=1;}
+        else{lastWeight=ex.weight;lastSetsHit=0;lastSetsTotal=1;}
+        break;
+      }
+      const setsArr=ex.sets||[];
+      lastWeight=ex.weight||setsArr[0]?.weight||null;
+      lastSetsHit=setsArr.filter(s=>s.done&&(s.reps||0)>=(reps||ex.targetReps||0)).length;
+      lastSetsTotal=setsArr.length;
+      break;
+    }
+    if(lastWeight!==null) break;
+  }
+  if(lastWeight===null) return null;
+  const inc=unit==='kg'?2.5:5;
+  let suggest=lastWeight;
+  if(lastSetsHit===lastSetsTotal) suggest=lastWeight+inc;
+  else if(lastSetsHit<lastSetsTotal/2) suggest=Math.max(0,lastWeight-inc);
+  return {last:lastWeight, suggest};
+}
+
+function checkPR(exId, weight, reps){
+  const prs=DB.getPRs();
+  const key=exId;
+  const vol=weight*reps;
+  if(!prs[key]||vol>prs[key].vol){
+    prs[key]={weight,reps,vol,date:todayKey()};
+    DB.setPRs(prs);
+    return true;
+  }
+  return false;
+}
+
+// ─── TODAY PAGE ───────────────────────────────────────────────────────────────
+let activeWorkout=null;
+
+function renderToday(){
+  const el=document.getElementById('page-today');
+  activeWorkout=DB.getActiveWorkout();
+  if(activeWorkout && activeWorkout.started){
+    renderActiveWorkout(el);
+  } else {
+    renderTodayHome(el);
+  }
+}
+
+function renderTodayHome(el){
+  const schedule=DB.getSchedule();
+  const programs=DB.getPrograms();
+  const settings=DB.getSettings();
+  const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const today=new Date();
+  const dayIdx=today.getDay();
+  const dayName=dayNames[dayIdx];
+
+  let suggestedProgram=null;
+  if(schedule && schedule.days){
+    const pid=schedule.days[dayIdx];
+    if(pid && pid!=='rest'){
+      suggestedProgram=programs.find(p=>p.id===pid)||null;
+    }
+  }
+
+  let html=`<div class="page-header"><div><h1>Forge</h1><div class="page-title-sub">${dayName}, ${today.toLocaleDateString('en-US',{month:'long',day:'numeric'})}</div></div>
+    <button class="btn btn-secondary btn-sm" onclick="openTimerModal()">Timer</button>
+  </div>`;
+
+  // Streak
+  const streak=calcStreak();
+  if(streak>0){
+    html+=`<div class="card" style="display:flex;align-items:center;gap:14px;margin-bottom:10px">
+      <div><div class="streak-num">${streak}</div><div style="font-size:12px;color:var(--text2)">day streak</div></div>
+      <div style="font-size:13px;color:var(--text2);flex:1">Keep it going! ${streak>=7?'🔥 Solid week!':''}</div>
+    </div>`;
+  }
+
+  // Suggested workout
+  if(suggestedProgram){
+    html+=`<div class="section-label">Today's Program</div>
+    <div class="card" style="border-color:var(--orange)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div style="font-size:17px;font-weight:700">${suggestedProgram.name}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px">${suggestedProgram.exercises?.length||0} exercises</div>
+        </div>
+        <span class="badge badge-orange">Scheduled</span>
+      </div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px">${(suggestedProgram.exercises||[]).map(e=>getExName(e.id)).join(' · ')}</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="startProgramWorkout('${suggestedProgram.id}')">Start Workout</button>
+        <button class="btn btn-secondary btn-sm" onclick="showProgramPicker()">Change</button>
+      </div>
+    </div>`;
+  } else {
+    html+=`<div class="section-label">Start a Workout</div>
+    <div class="card" style="text-align:center;padding:20px">
+      <div style="font-size:14px;color:var(--text2);margin-bottom:14px">${schedule&&schedule.days&&schedule.days[dayIdx]==='rest'?'Rest day scheduled — take it easy!':'Choose a program to get started'}</div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="showProgramPicker()">Select Program</button>
+        <button class="btn btn-secondary" onclick="startEmptyWorkout()">Quick Workout</button>
+      </div>
+    </div>`;
+  }
+
+  // Quick timer presets
+  html+=`<div class="section-label">Quick Timers</div><div class="chips-row">`;
+  const presets=settings.timerPresets||[30,60,90,120,180];
+  presets.forEach(s=>{
+    const m=Math.floor(s/60),sec=s%60;
+    const label=m>0?(sec>0?m+'m'+sec+'s':m+'m'):s+'s';
+    html+=`<div class="chip" onclick="startTimer(${s})">${label}</div>`;
+  });
+  html+=`<div class="chip" onclick="openTimerModal()">Custom +</div></div>`;
+
+  // Recent workouts
+  const workouts=DB.getWorkouts();
+  const recentKeys=Object.keys(workouts).sort().reverse().slice(0,3);
+  if(recentKeys.length){
+    html+=`<div class="section-label" style="margin-top:18px">Recent Workouts</div>`;
+    recentKeys.forEach(k=>{
+      const w=workouts[k];
+      const d=new Date(k+'T12:00:00');
+      html+=`<div class="card card-sm" style="cursor:pointer" onclick="viewWorkoutLog('${k}')">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-weight:600;font-size:15px">${w.programName||'Quick Workout'}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:2px">${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})} · ${w.exercises?.length||0} exercises</div></div>
+          <div style="font-size:13px;color:var(--text2)">${totalVolume(w)} ${DB.getSettings().unit}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  if(!programs.length){
+    html+=`<div style="padding:20px 16px"><div class="card" style="text-align:center;padding:20px">
+      <div style="font-size:14px;color:var(--text2);margin-bottom:12px">Create your first program in Settings!</div>
+      <button class="btn btn-primary btn-sm" onclick="document.querySelectorAll('.nav-btn')[4].click()">Go to Settings</button>
+    </div></div>`;
+  }
+
+  el.innerHTML=html;
+}
+
+function totalVolume(w){
+  let v=0;
+  (w.exercises||[]).forEach(ex=>{
+    if(ex.type==='37'){v+=(ex.weight||0)*35;}
+    else (ex.sets||[]).forEach(s=>{if(s.done)v+=(s.weight||ex.weight||0)*(s.reps||0);});
+  });
+  return fmt(v);
+}
+
+function getExName(id){
+  const exercises=DB.getExercises();
+  return exercises.find(e=>e.id===id)?.name||id;
+}
+
+function calcStreak(){
+  const workouts=DB.getWorkouts();
+  const keys=Object.keys(workouts).sort().reverse();
+  if(!keys.length) return 0;
+  let streak=0, d=new Date();
+  d.setHours(0,0,0,0);
+  for(let i=0;i<365;i++){
+    const k=dateKey(d);
+    if(workouts[k]){streak++;}
+    else if(i>0){break;}
+    d.setDate(d.getDate()-1);
+  }
+  return streak;
+}
+
+function showProgramPicker(){
+  const programs=DB.getPrograms();
+  if(!programs.length){showToast('No programs yet — create one in Settings!');return;}
+  let html=`<h2>Select Program</h2>`;
+  programs.forEach(p=>{
+    html+=`<div class="card card-sm" style="cursor:pointer;margin:0 0 8px" onclick="startProgramWorkout('${p.id}');closeModal()">
+      <div style="font-weight:600">${p.name}</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:2px">${(p.exercises||[]).length} exercises</div>
+    </div>`;
+  });
+  html+=`<button class="btn btn-secondary btn-full" style="margin-top:8px" onclick="closeModal()">Cancel</button>`;
+  openModal(html);
+}
+
+function startProgramWorkout(pid){
+  closeModal();
+  const programs=DB.getPrograms();
+  const program=programs.find(p=>p.id===pid);
+  if(!program) return;
+  const settings=DB.getSettings();
+
+  const workout={
+    id: uid(),
+    programId: pid,
+    programName: program.name,
+    started: Date.now(),
+    exercises: (program.exercises||[]).map(pe=>{
+      const proj=getProjection(pe.id, pe.sets, pe.reps);
+      const suggestedWeight=proj?proj.suggest:(settings.unit==='kg'?60:135);
+      if(pe.type==='37'){
+        return {id:pe.id, type:'37', weight:suggestedWeight, lastWeight:proj?proj.last:null, clusters:[
+          {reps:3,done:false},{reps:4,done:false},{reps:5,done:false},{reps:6,done:false},{reps:7,done:false}
+        ]};
+      }
+      const sets=[];
+      for(let i=0;i<(pe.sets||3);i++){
+        sets.push({id:uid(),weight:suggestedWeight,reps:pe.reps||10,done:false,actualReps:null,actualWeight:null});
+      }
+      return {id:pe.id, type:'standard', weight:suggestedWeight, targetReps:pe.reps||10, lastWeight:proj?proj.last:null, sets};
+    }),
+    currentExIdx: 0,
+    notes: ''
+  };
+
+  DB.setActiveWorkout(workout);
+  activeWorkout=workout;
+  renderToday();
+}
+
+function startEmptyWorkout(){
+  const workout={id:uid(),programId:null,programName:'Quick Workout',started:Date.now(),exercises:[],currentExIdx:0,notes:''};
+  DB.setActiveWorkout(workout);
+  activeWorkout=workout;
+  renderToday();
+}
+
+function renderActiveWorkout(el){
+  const aw=activeWorkout;
+  const elapsed=Math.floor((Date.now()-aw.started)/1000);
+  const total=aw.exercises.length;
+  const done=aw.exercises.filter(ex=>{
+    if(ex.type==='37') return ex.clusters.every(c=>c.done);
+    return ex.sets.every(s=>s.done);
+  }).length;
+
+  let html=`<div class="page-header" style="padding-bottom:8px">
+    <div><h1>${aw.programName}</h1><div class="page-title-sub" id="workout-elapsed">Elapsed</div></div>
+    <button class="btn btn-danger btn-sm" onclick="confirmFinishWorkout()">Finish</button>
+  </div>`;
+
+  // Progress bar
+  const pct=total?Math.round(done/total*100):0;
+  html+=`<div style="padding:0 16px 12px">
+    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:6px"><span>${done} of ${total} exercises</span><span>${pct}%</span></div>
+    <div class="prog-bar"><div class="prog-bar-fill" style="width:${pct}%"></div></div>
+  </div>`;
+
+  // Exercises
+  aw.exercises.forEach((ex,idx)=>{
+    const exDone=ex.type==='37'?ex.clusters.every(c=>c.done):ex.sets.every(s=>s.done);
+    const isActive=idx===aw.currentExIdx&&!exDone;
+    const exName=getExName(ex.id);
+    const exercises=DB.getExercises();
+    const exDef=exercises.find(e=>e.id===ex.id);
+
+    html+=`<div class="ex-card ${isActive?'active-ex':''}" id="ex-card-${idx}">
+      <div class="ex-card-header" onclick="toggleExCard(${idx})">
+        <div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:16px;font-weight:700">${exName}</span>
+            ${exDone?'<span class="badge badge-green">Done</span>':''}
+          </div>
+          <div class="ex-card-type">${exDef?.equipment||''} ${ex.type==='37'?'· 3-7 Method':''}</div>
+          ${ex.lastWeight?`<div style="font-size:12px;color:var(--text2);margin-top:2px">Last: ${ex.lastWeight} ${DB.getSettings().unit} → Target: ${ex.weight} ${DB.getSettings().unit}</div>`:''}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();editExWeight(${idx})">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            ${ex.weight} ${DB.getSettings().unit}
+          </button>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+      <div class="ex-card-body" id="ex-body-${idx}" style="${isActive||exDone?'':'display:none'}">`;
+
+    if(ex.type==='37'){
+      html+=render37Body(ex,idx);
+    } else {
+      html+=renderSetsBody(ex,idx);
+    }
+    html+=`</div></div>`;
+  });
+
+  // Add exercise button
+  html+=`<div style="padding:0 16px 8px;display:flex;gap:8px">
+    <button class="btn btn-secondary" style="flex:1" onclick="addExerciseToWorkout()">+ Add Exercise</button>
+  </div>`;
+
+  el.innerHTML=html;
+
+  // Update elapsed
+  updateElapsedTimer(aw.started);
+}
+
+function updateElapsedTimer(started){
+  const el=document.getElementById('workout-elapsed');
+  if(!el) return;
+  const secs=Math.floor((Date.now()-started)/1000);
+  const m=Math.floor(secs/60),s=secs%60;
+  el.textContent=`${m}m ${s<10?'0':''}${s}s elapsed`;
+  setTimeout(()=>updateElapsedTimer(started),5000);
+}
+
+function toggleExCard(idx){
+  const body=document.getElementById('ex-body-'+idx);
+  if(body) body.style.display=body.style.display==='none'?'':'none';
+}
+
+function renderSetsBody(ex,exIdx){
+  let html='';
+  ex.sets.forEach((set,si)=>{
+    const w=set.actualWeight||set.weight||ex.weight;
+    const r=set.actualReps||set.reps||ex.targetReps;
+    html+=`<div class="set-row" id="set-row-${exIdx}-${si}">
+      <button class="set-check ${set.done?'done':''}" onclick="completeSet(${exIdx},${si})">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+      <div class="set-info">
+        <div class="set-label">Set ${si+1}</div>
+        <div class="set-values">${w} ${DB.getSettings().unit} × ${r} reps</div>
+      </div>
+      <button class="set-edit-btn" onclick="editSet(${exIdx},${si})">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+    </div>`;
+  });
+  html+=`<button class="btn btn-ghost btn-sm" style="color:var(--orange);margin-top:6px" onclick="addSet(${exIdx})">+ Add Set</button>`;
+  return html;
+}
+
+function render37Body(ex,exIdx){
+  let html=`<div style="font-size:13px;color:var(--text2);margin-bottom:10px">3-7 Method — 15s rest between clusters</div>`;
+  ex.clusters.forEach((cl,ci)=>{
+    const allPrev=ex.clusters.slice(0,ci).every(c=>c.done);
+    const isActive=allPrev&&!cl.done;
+    html+=`<div class="cluster-row">
+      <div class="cluster-num ${cl.done?'done-cluster':''} ${isActive?'active-cluster':''}">${cl.reps}</div>
+      <div style="flex:1"><div style="font-size:15px;font-weight:600">${cl.reps} reps</div>
+        <div style="font-size:12px;color:var(--text2)">${cl.done?'Complete':isActive?'Up next':'Upcoming'}</div></div>
+      <button class="set-check ${cl.done?'done':''}" onclick="completeCluster(${exIdx},${ci})">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+      </button>
+    </div>`;
+  });
+  return html;
+}
+
+function completeSet(exIdx,setIdx){
+  if(!activeWorkout) return;
+  const ex=activeWorkout.exercises[exIdx];
+  const set=ex.sets[setIdx];
+  set.done=true;
+  set.completedAt=Date.now();
+
+  // PR check
+  const isPR=checkPR(ex.id, set.actualWeight||ex.weight, set.actualReps||ex.targetReps);
+  if(isPR) showToast('New Personal Record!');
+
+  // Check if exercise done
+  const allDone=ex.sets.every(s=>s.done);
+  if(allDone){
+    activeWorkout.currentExIdx=Math.min(exIdx+1, activeWorkout.exercises.length-1);
+  }
+
+  DB.setActiveWorkout(activeWorkout);
+
+  // Auto timer
+  const settings=DB.getSettings();
+  if(settings.autoTimer!==false){
+    startTimer(settings.restTimer||90);
+  }
+
+  renderToday();
+}
+
+function completeCluster(exIdx,clIdx){
+  if(!activeWorkout) return;
+  const ex=activeWorkout.exercises[exIdx];
+  const cl=ex.clusters[clIdx];
+  if(cl.done) return;
+
+  // Only allow completing in order
+  if(clIdx>0&&!ex.clusters[clIdx-1].done) return;
+
+  cl.done=true;
+  const allDone=ex.clusters.every(c=>c.done);
+
+  if(allDone){
+    // Full 3-7 complete
+    checkPR(ex.id, ex.weight, 35);
+    activeWorkout.currentExIdx=Math.min(exIdx+1,activeWorkout.exercises.length-1);
+    showToast('3-7 Method complete!');
+    DB.setActiveWorkout(activeWorkout);
+    renderToday();
+  } else {
+    // 15s rest timer
+    DB.setActiveWorkout(activeWorkout);
+    renderToday();
+    startTimer(15);
+  }
+}
+
+function editSet(exIdx,setIdx){
+  const aw=activeWorkout;
+  const ex=aw.exercises[exIdx];
+  const set=ex.sets[setIdx];
+  const unit=DB.getSettings().unit;
+  const html=`<h2>Edit Set ${setIdx+1}</h2>
+    <div class="form-group"><label>Weight (${unit})</label><input type="number" id="edit-w" value="${set.actualWeight||set.weight||ex.weight}" step="2.5"></div>
+    <div class="form-group"><label>Reps</label><input type="number" id="edit-r" value="${set.actualReps||set.reps||ex.targetReps}" step="1"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveEditSet(${exIdx},${setIdx})">Save</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+    </div>`;
+  openModal(html);
+}
+
+function saveEditSet(exIdx,setIdx){
+  const w=parseFloat(document.getElementById('edit-w').value);
+  const r=parseInt(document.getElementById('edit-r').value);
+  activeWorkout.exercises[exIdx].sets[setIdx].actualWeight=w;
+  activeWorkout.exercises[exIdx].sets[setIdx].actualReps=r;
+  activeWorkout.exercises[exIdx].sets[setIdx].done=true;
+  DB.setActiveWorkout(activeWorkout);
+  closeModal();
+  renderToday();
+}
+
+function addSet(exIdx){
+  const ex=activeWorkout.exercises[exIdx];
+  ex.sets.push({id:uid(),weight:ex.weight,reps:ex.targetReps||10,done:false});
+  DB.setActiveWorkout(activeWorkout);
+  renderToday();
+}
+
+function editExWeight(exIdx){
+  const ex=activeWorkout.exercises[exIdx];
+  const unit=DB.getSettings().unit;
+  const html=`<h2>Change Weight</h2>
+    <div class="form-group"><label>Weight (${unit})</label><input type="number" id="ew-val" value="${ex.weight}" step="2.5"></div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:14px">Updates all uncompleted sets</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveExWeight(${exIdx})">Update</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+    </div>`;
+  openModal(html);
+}
+
+function saveExWeight(exIdx){
+  const w=parseFloat(document.getElementById('ew-val').value);
+  const ex=activeWorkout.exercises[exIdx];
+  ex.weight=w;
+  ex.sets?.forEach(s=>{if(!s.done)s.weight=w;});
+  DB.setActiveWorkout(activeWorkout);
+  closeModal();
+  renderToday();
+}
+
+function addExerciseToWorkout(){
+  const exercises=DB.getExercises();
+  const unit=DB.getSettings().unit;
+  let html=`<h2>Add Exercise</h2>
+    <div class="form-group"><input type="text" id="ex-search" placeholder="Search exercises..." oninput="filterExModal()" style="margin-bottom:10px"></div>
+    <div style="max-height:300px;overflow-y:auto" id="ex-list-modal">`;
+  exercises.forEach(e=>{
+    html+=`<div class="card card-sm" style="cursor:pointer;margin:0 0 6px" onclick="selectExForWorkout('${e.id}')">
+      <div style="font-weight:600">${e.name}</div>
+      <div style="font-size:12px;color:var(--text2)">${e.category} · ${e.equipment}</div>
+    </div>`;
+  });
+  html+=`</div>`;
+  openModal(html);
+}
+
+function filterExModal(){
+  const q=document.getElementById('ex-search').value.toLowerCase();
+  document.querySelectorAll('#ex-list-modal .card').forEach(card=>{
+    const name=card.querySelector('[style*="font-weight"]')?.textContent?.toLowerCase()||'';
+    card.style.display=name.includes(q)?'':'none';
+  });
+}
+
+function selectExForWorkout(exId){
+  closeModal();
+  const exercises=DB.getExercises();
+  const exDef=exercises.find(e=>e.id===exId);
+  const proj=getProjection(exId,3,10);
+  const settings=DB.getSettings();
+  const suggestedWeight=proj?proj.suggest:(settings.unit==='kg'?60:135);
+
+  setTimeout(()=>{
+    const unit=settings.unit;
+    const html=`<h2>${exDef?.name}</h2>
+      <div class="form-group"><label>Set Type</label>
+        <select id="new-ex-type"><option value="standard">Standard Sets</option><option value="37">3-7 Method</option></select>
+      </div>
+      <div class="form-group"><label>Weight (${unit})</label><input type="number" id="new-ex-w" value="${suggestedWeight}" step="2.5"></div>
+      <div class="form-group row2" id="new-ex-standard">
+        <div><label>Sets</label><input type="number" id="new-ex-sets" value="3" min="1" max="10"></div>
+        <div><label>Reps</label><input type="number" id="new-ex-reps" value="10" min="1" max="50"></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:1" onclick="confirmAddEx('${exId}')">Add</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+      </div>`;
+    openModal(html);
+  },200);
+}
+
+function confirmAddEx(exId){
+  const type=document.getElementById('new-ex-type').value;
+  const w=parseFloat(document.getElementById('new-ex-w').value);
+  const sets=parseInt(document.getElementById('new-ex-sets')?.value||3);
+  const reps=parseInt(document.getElementById('new-ex-reps')?.value||10);
+  let ex;
+  if(type==='37'){
+    ex={id:exId,type:'37',weight:w,clusters:[{reps:3,done:false},{reps:4,done:false},{reps:5,done:false},{reps:6,done:false},{reps:7,done:false}]};
+  } else {
+    const sArr=[];
+    for(let i=0;i<sets;i++) sArr.push({id:uid(),weight:w,reps,done:false});
+    ex={id:exId,type:'standard',weight:w,targetReps:reps,sets:sArr};
+  }
+  activeWorkout.exercises.push(ex);
+  DB.setActiveWorkout(activeWorkout);
+  closeModal();
+  renderToday();
+}
+
+function confirmFinishWorkout(){
+  const total=activeWorkout.exercises.length;
+  const doneSets=activeWorkout.exercises.reduce((acc,ex)=>{
+    if(ex.type==='37') return acc+(ex.clusters.filter(c=>c.done).length);
+    return acc+(ex.sets?.filter(s=>s.done).length||0);
+  },0);
+  const html=`<h2>Finish Workout?</h2>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:16px">${doneSets} sets completed across ${total} exercises</div>
+    <div class="form-group"><label>Session Notes (optional)</label><textarea id="finish-notes" rows="3" style="resize:none" placeholder="How did it feel?">${activeWorkout.notes||''}</textarea></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" style="flex:1" onclick="finishWorkout()">Save & Finish</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Keep Going</button>
+    </div>`;
+  openModal(html);
+}
+
+function finishWorkout(){
+  const notes=document.getElementById('finish-notes')?.value||'';
+  activeWorkout.notes=notes;
+  activeWorkout.finished=Date.now();
+  activeWorkout.duration=Math.floor((activeWorkout.finished-activeWorkout.started)/1000);
+
+  const workouts=DB.getWorkouts();
+  workouts[todayKey()]=activeWorkout;
+  DB.setWorkouts(workouts);
+  DB.setActiveWorkout(null);
+  activeWorkout=null;
+  closeModal();
+
+  // Show summary
+  showWorkoutSummary(workouts[todayKey()]);
+}
+
+function showWorkoutSummary(w){
+  const unit=DB.getSettings().unit;
+  const vol=totalVolume(w);
+  const dur=fmtDur(w.duration||0);
+  const exCount=w.exercises?.length||0;
+  const setCount=(w.exercises||[]).reduce((a,ex)=>a+(ex.type==='37'?5:(ex.sets?.filter(s=>s.done).length||0)),0);
+
+  openModal(`<div class="complete-hero">
+    <div class="complete-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div style="font-size:24px;font-weight:800;margin-bottom:4px">Workout Complete!</div>
+    <div style="font-size:14px;color:var(--text2)">${w.programName}</div>
+  </div>
+  <div class="stat-grid" style="margin-bottom:16px">
+    <div class="stat-card"><div class="stat-label">Duration</div><div class="stat-val" style="font-size:18px">${dur}</div></div>
+    <div class="stat-card"><div class="stat-label">Volume</div><div class="stat-val" style="font-size:18px">${vol}</div><div class="stat-sub">${unit}</div></div>
+    <div class="stat-card"><div class="stat-label">Exercises</div><div class="stat-val">${exCount}</div></div>
+    <div class="stat-card"><div class="stat-label">Sets Done</div><div class="stat-val">${setCount}</div></div>
+  </div>
+  <button class="btn btn-primary btn-full" onclick="closeModal();renderPage('today')">Done</button>`);
+}
+
+function viewWorkoutLog(dateKey){
+  const workouts=DB.getWorkouts();
+  const w=workouts[dateKey];
+  if(!w) return;
+  const unit=DB.getSettings().unit;
+  let html=`<h2>${w.programName}</h2>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:14px">${new Date(dateKey+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})} · ${fmtDur(w.duration||0)}</div>`;
+  (w.exercises||[]).forEach(ex=>{
+    html+=`<div style="margin-bottom:14px"><div style="font-weight:700;margin-bottom:6px">${getExName(ex.id)}</div>`;
+    if(ex.type==='37'){
+      html+=`<div style="font-size:13px;color:var(--text2)">3-7 Method · ${ex.weight} ${unit}</div>`;
+    } else {
+      (ex.sets||[]).filter(s=>s.done).forEach((s,i)=>{
+        html+=`<div style="font-size:14px;color:var(--text2);padding:3px 0">Set ${i+1}: ${s.actualWeight||s.weight||ex.weight} ${unit} × ${s.actualReps||s.reps||ex.targetReps} reps</div>`;
+      });
+    }
+    html+=`</div>`;
+  });
+  if(w.notes) html+=`<div class="card card-sm" style="margin:0"><div style="font-size:12px;color:var(--text3);margin-bottom:4px">Notes</div><div style="font-size:14px">${w.notes}</div></div>`;
+  html+=`<button class="btn btn-secondary btn-full" style="margin-top:12px" onclick="closeModal()">Close</button>`;
+  openModal(html);
+}
+
+// ─── TIMER MODAL ──────────────────────────────────────────────────────────────
+function openTimerModal(){
+  const settings=DB.getSettings();
+  const presets=settings.timerPresets||[30,60,90,120,180];
+  let html=`<h2>Timer</h2>
+    <div class="form-group"><label>Custom Duration (seconds)</label>
+      <input type="number" id="custom-timer-val" value="60" min="5" max="600" step="5">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="startCustomTimer()" style="margin-bottom:14px">Start Timer</button>
+    <div class="divider"></div>
+    <div style="font-size:13px;color:var(--text2);margin:12px 0 8px;font-weight:500">Quick Presets</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">`;
+  presets.forEach(s=>{
+    const m=Math.floor(s/60),sec=s%60;
+    const label=m>0?(sec>0?m+'m '+sec+'s':m+'m'):s+'s';
+    html+=`<button class="btn btn-secondary btn-sm" onclick="startTimer(${s});closeModal()">${label}</button>`;
+  });
+  html+=`</div>
+    <div class="divider"></div>
+    <div style="font-size:13px;color:var(--text2);margin:12px 0 8px;font-weight:500">Manage Presets</div>`;
+  presets.forEach((s,i)=>{
+    const m=Math.floor(s/60),sec=s%60;
+    const label=m>0?(sec>0?m+'m '+sec+'s':m+'m'):s+'s';
+    html+=`<div class="setting-row" style="padding:8px 0">
+      <span class="setting-label">${label}</span>
+      <button class="btn btn-danger btn-sm" onclick="removePreset(${i})">Remove</button>
+    </div>`;
+  });
+  html+=`<div style="display:flex;gap:8px;margin-top:8px">
+    <input type="number" id="new-preset" placeholder="Seconds" style="flex:1">
+    <button class="btn btn-secondary" onclick="addPreset()">Add</button>
+  </div>`;
+  openModal(html);
+}
+
+function startCustomTimer(){
+  const v=parseInt(document.getElementById('custom-timer-val').value);
+  if(v>0){startTimer(v);closeModal();}
+}
+
+function addPreset(){
+  const v=parseInt(document.getElementById('new-preset').value);
+  if(!v||v<5) return;
+  const s=DB.getSettings();
+  s.timerPresets=[...(s.timerPresets||[30,60,90,120,180]),v].sort((a,b)=>a-b);
+  DB.setSettings(s);
+  openTimerModal();
+}
+
+function removePreset(idx){
+  const s=DB.getSettings();
+  s.timerPresets=(s.timerPresets||[30,60,90,120,180]).filter((_,i)=>i!==idx);
+  DB.setSettings(s);
+  openTimerModal();
+}
+
+// ─── CALENDAR PAGE ────────────────────────────────────────────────────────────
+let calDate=new Date();
+function renderCalendar(){
+  const el=document.getElementById('page-calendar');
+  const workouts=DB.getWorkouts();
+  const year=calDate.getFullYear(), month=calDate.getMonth();
+  const monthName=calDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const today=new Date(); today.setHours(0,0,0,0);
+
+  let html=`<div class="page-header"><div><h1>Calendar</h1></div></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 16px">
+      <button class="btn-icon" onclick="calPrev()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <span style="font-weight:600;font-size:16px">${monthName}</span>
+      <button class="btn-icon" onclick="calNext()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="cal-grid">`;
+  ['S','M','T','W','T','F','S'].forEach(d=>html+=`<div class="cal-day-label">${d}</div>`);
+  for(let i=0;i<firstDay;i++) html+=`<div></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const date=new Date(year,month,d);
+    const k=dateKey(date);
+    const hasW=!!workouts[k];
+    const isToday=date.getTime()===today.getTime();
+    html+=`<div class="cal-day ${hasW?'has-workout':''} ${isToday?'today':''}" onclick="${hasW?`viewWorkoutLog('${k}')`:''}">
+      ${d}
+    </div>`;
+  }
+  html+=`</div><div class="divider" style="margin:16px"></div>`;
+
+  // Recent workouts list
+  const keys=Object.keys(workouts).filter(k=>k.startsWith(`${year}-${String(month+1).padStart(2,'0')}`)).sort().reverse();
+  if(keys.length){
+    html+=`<div class="section-label">This Month</div>`;
+    keys.forEach(k=>{
+      const w=workouts[k];
+      const d=new Date(k+'T12:00:00');
+      html+=`<div class="card card-sm" style="cursor:pointer" onclick="viewWorkoutLog('${k}')">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-weight:600">${w.programName}</div>
+          <div style="font-size:13px;color:var(--text2)">${d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}</div></div>
+          <div style="font-size:13px;color:var(--orange)">${totalVolume(w)} ${DB.getSettings().unit}</div>
+        </div>
+      </div>`;
+    });
+  } else {
+    html+=`<div class="empty"><div class="empty-icon">📅</div><h3>No workouts this month</h3><p>Tap a program on the Today tab to get started.</p></div>`;
+  }
+  el.innerHTML=html;
+}
+
+function calPrev(){calDate=new Date(calDate.getFullYear(),calDate.getMonth()-1,1);renderCalendar();}
+function calNext(){calDate=new Date(calDate.getFullYear(),calDate.getMonth()+1,1);renderCalendar();}
+
+// ─── PROGRESS PAGE ────────────────────────────────────────────────────────────
+let progressExId=null;
+function renderProgress(){
+  const el=document.getElementById('page-progress');
+  const exercises=DB.getExercises();
+  const prs=DB.getPRs();
+  const streak=calcStreak();
+  const workouts=DB.getWorkouts();
+  const unit=DB.getSettings().unit;
+  const wKeys=Object.keys(workouts).sort();
+  const totalSessions=wKeys.length;
+
+  let html=`<div class="page-header"><h1>Progress</h1></div>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="stat-label">Streak</div><div class="stat-val">${streak}</div><div class="stat-sub">days</div></div>
+      <div class="stat-card"><div class="stat-label">Sessions</div><div class="stat-val">${totalSessions}</div><div class="stat-sub">total</div></div>
+    </div>`;
+
+  // PRs
+  const prKeys=Object.keys(prs);
+  if(prKeys.length){
+    html+=`<div class="section-label" style="margin-top:16px">Personal Records</div>`;
+    prKeys.slice(0,5).forEach(k=>{
+      const pr=prs[k];
+      const exName=getExName(k);
+      html+=`<div class="card card-sm"><div style="display:flex;align-items:center;justify-content:space-between">
+        <div><div style="font-weight:600">${exName}</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:2px">${new Date(pr.date+'T12:00:00').toLocaleDateString()}</div></div>
+        <div style="text-align:right"><div style="font-size:17px;font-weight:700;color:var(--green)">${pr.weight} ${unit}</div>
+        <div style="font-size:12px;color:var(--text2)">× ${pr.reps} reps</div></div>
+      </div></div>`;
+    });
+  }
+
+  // Exercise chart
+  html+=`<div class="section-label" style="margin-top:16px">Exercise Progress</div>`;
+  html+=`<div class="chips-row" id="prog-chips">`;
+  exercises.slice(0,10).forEach(e=>{
+    const active=progressExId===e.id;
+    html+=`<div class="chip ${active?'active':''}" onclick="selectProgressEx('${e.id}')">${e.name}</div>`;
+  });
+  html+=`</div>`;
+
+  if(progressExId){
+    const data=getExerciseHistory(progressExId);
+    html+=`<div style="padding:0 16px;margin-top:14px">`;
+    if(data.length>=2){
+      html+=renderMiniChart(data,unit);
+    } else if(data.length===1){
+      html+=`<div class="card"><div style="font-size:14px;color:var(--text2)">Only 1 session logged — keep training to see progress!</div></div>`;
+    } else {
+      html+=`<div class="card"><div style="font-size:14px;color:var(--text2)">No data yet for this exercise.</div></div>`;
+    }
+    html+=`</div>`;
+  }
+
+  el.innerHTML=html;
+}
+
+function selectProgressEx(id){
+  progressExId=progressExId===id?null:id;
+  renderProgress();
+}
+
+function getExerciseHistory(exId){
+  const workouts=DB.getWorkouts();
+  const result=[];
+  Object.keys(workouts).sort().forEach(k=>{
+    const w=workouts[k];
+    (w.exercises||[]).forEach(ex=>{
+      if(ex.id!==exId) return;
+      let maxWeight=0;
+      if(ex.type==='37'){maxWeight=ex.weight||0;}
+      else (ex.sets||[]).filter(s=>s.done).forEach(s=>{
+        const w2=s.actualWeight||s.weight||ex.weight||0;
+        if(w2>maxWeight) maxWeight=w2;
+      });
+      if(maxWeight>0) result.push({date:k,weight:maxWeight});
+    });
+  });
+  return result;
+}
+
+function renderMiniChart(data,unit){
+  const max=Math.max(...data.map(d=>d.weight));
+  const min=Math.min(...data.map(d=>d.weight));
+  const range=max-min||1;
+  const h=120;
+  let html=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px">
+    <div style="font-size:13px;color:var(--text2);margin-bottom:10px">${getExName(data[0]&&progressExId||'')} — Max Weight (${unit})</div>
+    <div style="display:flex;align-items:flex-end;gap:6px;height:${h}px">`;
+  data.slice(-12).forEach(d=>{
+    const pct=((d.weight-min)/range);
+    const barH=Math.max(8,Math.round(pct*(h-20)));
+    const isPR=d.weight===max;
+    const dateShort=new Date(d.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    html+=`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end" title="${dateShort}: ${d.weight} ${unit}">
+      <div style="font-size:9px;color:${isPR?'var(--green)':'var(--text3)'};text-align:center">${isPR?'PR':''}</div>
+      <div style="width:100%;height:${barH}px;background:${isPR?'var(--green)':'var(--orange)'};border-radius:3px 3px 0 0;opacity:0.85"></div>
+      <div style="font-size:9px;color:var(--text3);text-align:center;white-space:nowrap;overflow:hidden;max-width:100%">${d.weight}</div>
+    </div>`;
+  });
+  html+=`</div></div>`;
+  return html;
+}
+
+// ─── EXERCISES PAGE ───────────────────────────────────────────────────────────
+let exFilter='All';
+function renderExercises(){
+  const el=document.getElementById('page-exercises');
+  const exercises=DB.getExercises();
+  const cats=['All','Chest','Back','Legs','Shoulders','Arms','Core'];
+
+  let html=`<div class="page-header">
+    <div><h1>Exercises</h1></div>
+    <button class="btn btn-primary btn-sm" onclick="addExerciseModal()">+ Add</button>
+  </div>
+  <div class="chips-row" style="margin-bottom:12px">`;
+  cats.forEach(c=>html+=`<div class="chip ${exFilter===c?'active':''}" onclick="setExFilter('${c}')">${c}</div>`);
+  html+=`</div>`;
+
+  const filtered=exFilter==='All'?exercises:exercises.filter(e=>e.category===exFilter);
+  filtered.forEach(e=>{
+    html+=`<div class="card card-sm" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-weight:600;font-size:15px">${e.name}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">${e.category} · ${e.equipment}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-icon" onclick="deleteExercise('${e.id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+    </div>`;
+  });
+
+  if(!filtered.length) html+=`<div class="empty"><div class="empty-icon">💪</div><h3>No exercises here</h3><p>Add your first exercise!</p></div>`;
+  el.innerHTML=html;
+}
+
+function setExFilter(cat){exFilter=cat;renderExercises();}
+
+function addExerciseModal(){
+  const html=`<h2>Add Exercise</h2>
+    <div class="form-group"><label>Name</label><input type="text" id="new-ex-name" placeholder="e.g. Cable Fly"></div>
+    <div class="form-group"><label>Category</label>
+      <select id="new-ex-cat"><option>Chest</option><option>Back</option><option>Legs</option><option>Shoulders</option><option>Arms</option><option>Core</option></select>
+    </div>
+    <div class="form-group"><label>Equipment</label>
+      <select id="new-ex-equip"><option>Barbell</option><option>Dumbbell</option><option>Cable</option><option>Bodyweight</option><option>Machine</option></select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-primary" style="flex:1" onclick="saveNewExercise()">Add Exercise</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+    </div>`;
+  openModal(html);
+}
+
+function saveNewExercise(){
+  const name=document.getElementById('new-ex-name').value.trim();
+  if(!name){showToast('Please enter a name');return;}
+  const cat=document.getElementById('new-ex-cat').value;
+  const equip=document.getElementById('new-ex-equip').value;
+  const exercises=DB.getExercises();
+  exercises.push({id:uid(),name,category:cat,equipment:equip});
+  DB.setExercises(exercises);
+  closeModal();
+  showToast('Exercise added!');
+  renderExercises();
+}
+
+function deleteExercise(id){
+  const exercises=DB.getExercises().filter(e=>e.id!==id);
+  DB.setExercises(exercises);
+  showToast('Exercise removed');
+  renderExercises();
+}
+
+// ─── SETTINGS PAGE ────────────────────────────────────────────────────────────
+function renderSettings(){
+  const el=document.getElementById('page-settings');
+  const settings=DB.getSettings();
+  const programs=DB.getPrograms();
+  const schedule=DB.getSchedule()||{days:[null,null,null,null,null,null,null]};
+  const dayNames=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const unit=settings.unit||'lbs';
+
+  let html=`<div class="page-header"><h1>Settings</h1></div>`;
+
+  // Units
+  html+=`<div class="section-label">Units & Defaults</div><div class="card">
+    <div class="setting-row">
+      <div><div class="setting-label">Weight Unit</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm ${unit==='lbs'?'btn-primary':'btn-secondary'}" onclick="setUnit('lbs')">lbs</button>
+        <button class="btn btn-sm ${unit==='kg'?'btn-primary':'btn-secondary'}" onclick="setUnit('kg')">kg</button>
+      </div>
+    </div>
+    <div class="setting-row">
+      <div><div class="setting-label">Barbell Weight</div><div class="setting-sub">Default bar weight</div></div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="number" id="barbell-w" value="${settings.barbellWeight||45}" style="width:70px;text-align:center" onchange="saveBarbellW()">
+        <span style="font-size:13px;color:var(--text2)">${unit}</span>
+      </div>
+    </div>
+    <div class="setting-row" style="border-bottom:none">
+      <div><div class="setting-label">Auto-start Rest Timer</div><div class="setting-sub">After each set</div></div>
+      <div class="switch ${settings.autoTimer!==false?'on':''}" onclick="toggleAutoTimer()"><div class="switch-thumb"></div></div>
+    </div>
+  </div>`;
+
+  // Default rest timer
+  html+=`<div class="section-label">Default Rest Timer</div><div class="card">
+    <div class="setting-row" style="border-bottom:none">
+      <div class="setting-label">Rest Duration</div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <input type="number" id="rest-timer" value="${settings.restTimer||90}" style="width:70px;text-align:center" onchange="saveRestTimer()">
+        <span style="font-size:13px;color:var(--text2)">sec</span>
+      </div>
+    </div>
+  </div>`;
+
+  // Programs
+  html+=`<div class="section-label" style="display:flex;align-items:center;justify-content:space-between;padding-right:16px">
+    Programs <button class="btn btn-primary btn-sm" onclick="createProgramModal()">+ New</button>
+  </div>`;
+  if(programs.length){
+    programs.forEach(p=>{
+      html+=`<div class="card card-sm" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-weight:600">${p.name}</div>
+          <div style="font-size:12px;color:var(--text2)">${(p.exercises||[]).length} exercises</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-secondary" onclick="editProgram('${p.id}')">Edit</button>
+          <button class="btn-icon" onclick="deleteProgram('${p.id}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          </button>
+        </div>
+      </div>`;
+    });
+  } else {
+    html+=`<div class="card" style="text-align:center;padding:20px"><div style="color:var(--text2);font-size:14px">No programs yet</div></div>`;
+  }
+
+  // Schedule
+  html+=`<div class="section-label" style="margin-top:16px">Weekly Schedule</div><div class="card">`;
+  dayNames.forEach((day,i)=>{
+    const pid=schedule.days?.[i];
+    const prog=programs.find(p=>p.id===pid);
+    html+=`<div class="schedule-day">
+      <div class="day-name">${day}</div>
+      <select onchange="setScheduleDay(${i},this.value)" style="flex:1;font-size:13px;padding:6px 10px">
+        <option value="rest" ${!pid||pid==='rest'?'selected':''}>Rest Day</option>
+        ${programs.map(p=>`<option value="${p.id}" ${pid===p.id?'selected':''}>${p.name}</option>`).join('')}
+      </select>
+    </div>`;
+  });
+  html+=`</div>`;
+
+  // Data
+  html+=`<div class="section-label" style="margin-top:16px">Data</div><div class="card">
+    <div class="setting-row" style="border-bottom:none">
+      <div class="setting-label">Clear All Data</div>
+      <button class="btn btn-danger btn-sm" onclick="confirmClearData()">Clear</button>
+    </div>
+  </div>`;
+
+  html+=`<div style="height:20px"></div>`;
+  el.innerHTML=html;
+}
+
+function setUnit(u){const s=DB.getSettings();s.unit=u;DB.setSettings(s);renderSettings();}
+function saveBarbellW(){const s=DB.getSettings();s.barbellWeight=parseFloat(document.getElementById('barbell-w').value)||45;DB.setSettings(s);}
+function saveRestTimer(){const s=DB.getSettings();s.restTimer=parseInt(document.getElementById('rest-timer').value)||90;DB.setSettings(s);}
+function toggleAutoTimer(){const s=DB.getSettings();s.autoTimer=s.autoTimer===false?true:false;DB.setSettings(s);renderSettings();}
+function setScheduleDay(idx,val){
+  const schedule=DB.getSchedule()||{days:[null,null,null,null,null,null,null]};
+  schedule.days[idx]=val==='rest'?null:val;
+  DB.setSchedule(schedule);
+}
+
+function confirmClearData(){
+  openModal(`<h2>Clear All Data?</h2>
+    <div style="font-size:14px;color:var(--text2);margin-bottom:16px">This will delete all workouts, programs, and settings. This cannot be undone.</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-danger" style="flex:1" onclick="clearAllData()">Yes, Clear Everything</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+    </div>`);
+}
+
+function clearAllData(){
+  ['workouts','programs','exercises','settings','prs','active_workout','schedule'].forEach(k=>localStorage.removeItem('forge_'+k));
+  closeModal();
+  location.reload();
+}
+
+// ─── PROGRAM EDITOR ───────────────────────────────────────────────────────────
+function createProgramModal(){
+  const html=`<h2>New Program</h2>
+    <div class="form-group"><label>Program Name</label><input type="text" id="prog-name" placeholder="e.g. Push Day A"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn btn-primary" style="flex:1" onclick="createProgram()">Create</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal()">Cancel</button>
+    </div>`;
+  openModal(html);
+}
+
+function createProgram(){
+  const name=document.getElementById('prog-name').value.trim();
+  if(!name){showToast('Enter a program name');return;}
+  const programs=DB.getPrograms();
+  const prog={id:uid(),name,exercises:[]};
+  programs.push(prog);
+  DB.setPrograms(programs);
+  closeModal();
+  showToast('Program created!');
+  setTimeout(()=>editProgram(prog.id),200);
+}
+
+function editProgram(pid){
+  const programs=DB.getPrograms();
+  const prog=programs.find(p=>p.id===pid);
+  if(!prog) return;
+  const exercises=DB.getExercises();
+
+  let html=`<h2>${prog.name}</h2>`;
+  html+=`<div style="margin-bottom:14px">`;
+  if(prog.exercises&&prog.exercises.length){
+    prog.exercises.forEach((pe,i)=>{
+      const exDef=exercises.find(e=>e.id===pe.id);
+      html+=`<div class="card card-sm" style="display:flex;align-items:center;gap:10px;margin:0 0 6px">
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:14px">${exDef?.name||pe.id}</div>
+          <div style="font-size:12px;color:var(--text2)">${pe.type==='37'?'3-7 Method':`${pe.sets||3}×${pe.reps||10}`} · ${exDef?.equipment||''}</div>
+        </div>
+        <button class="btn-icon" onclick="removeProgramEx('${pid}',${i})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`;
+    });
+  } else {
+    html+=`<div style="text-align:center;padding:16px;color:var(--text2);font-size:14px">No exercises yet</div>`;
+  }
+  html+=`</div>
+    <button class="btn btn-secondary btn-full" style="margin-bottom:8px" onclick="addExToProgramModal('${pid}')">+ Add Exercise</button>
+    <button class="btn btn-primary btn-full" onclick="closeModal()">Done</button>`;
+  openModal(html);
+}
+
+function addExToProgramModal(pid){
+  const exercises=DB.getExercises();
+  let html=`<h2>Add to Program</h2>
+    <div class="form-group"><input type="text" id="prog-ex-search" placeholder="Search..." oninput="filterProgExModal()" style="margin-bottom:10px"></div>
+    <div style="max-height:260px;overflow-y:auto" id="prog-ex-list">`;
+  exercises.forEach(e=>{
+    html+=`<div class="card card-sm" style="cursor:pointer;margin:0 0 6px" onclick="selectProgEx('${pid}','${e.id}')">
+      <div style="font-weight:600">${e.name}</div>
+      <div style="font-size:12px;color:var(--text2)">${e.category} · ${e.equipment}</div>
+    </div>`;
+  });
+  html+=`</div>`;
+  openModal(html);
+}
+
+function filterProgExModal(){
+  const q=document.getElementById('prog-ex-search').value.toLowerCase();
+  document.querySelectorAll('#prog-ex-list .card').forEach(card=>{
+    const name=card.querySelector('[style*="font-weight"]')?.textContent?.toLowerCase()||'';
+    card.style.display=name.includes(q)?'':'none';
+  });
+}
+
+function selectProgEx(pid,exId){
+  closeModal();
+  setTimeout(()=>{
+    const exercises=DB.getExercises();
+    const exDef=exercises.find(e=>e.id===exId);
+    const html=`<h2>${exDef?.name}</h2>
+      <div class="form-group"><label>Set Type</label>
+        <select id="pex-type" onchange="toggleProgExType()">
+          <option value="standard">Standard Sets</option>
+          <option value="37">3-7 Method</option>
+        </select>
+      </div>
+      <div id="pex-standard-opts">
+        <div class="form-group row2">
+          <div><label>Sets</label><input type="number" id="pex-sets" value="3" min="1" max="10"></div>
+          <div><label>Reps</label><input type="number" id="pex-reps" value="10" min="1" max="50"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:1" onclick="confirmAddProgEx('${pid}','${exId}')">Add</button>
+        <button class="btn btn-secondary" style="flex:1" onclick="editProgram('${pid}')">Back</button>
+      </div>`;
+    openModal(html);
+  },200);
+}
+
+function toggleProgExType(){
+  const t=document.getElementById('pex-type').value;
+  document.getElementById('pex-standard-opts').style.display=t==='37'?'none':'';
+}
+
+function confirmAddProgEx(pid,exId){
+  const type=document.getElementById('pex-type').value;
+  const sets=parseInt(document.getElementById('pex-sets')?.value||3);
+  const reps=parseInt(document.getElementById('pex-reps')?.value||10);
+  const programs=DB.getPrograms();
+  const prog=programs.find(p=>p.id===pid);
+  if(!prog) return;
+  prog.exercises=prog.exercises||[];
+  prog.exercises.push({id:exId,type,sets,reps});
+  DB.setPrograms(programs);
+  editProgram(pid);
+}
+
+function removeProgramEx(pid,idx){
+  const programs=DB.getPrograms();
+  const prog=programs.find(p=>p.id===pid);
+  if(!prog) return;
+  prog.exercises.splice(idx,1);
+  DB.setPrograms(programs);
+  editProgram(pid);
+}
+
+function deleteProgram(pid){
+  const programs=DB.getPrograms().filter(p=>p.id!==pid);
+  DB.setPrograms(programs);
+  showToast('Program deleted');
+  renderSettings();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderPage('today');
+</script>
+</body>
+</html>
