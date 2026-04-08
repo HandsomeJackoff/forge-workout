@@ -2,16 +2,17 @@
   "name": "Forge — Workout Tracker",
   "short_name": "Forge",
   "description": "Smart workout tracking with progressive overload",
-  "start_url": "/",
+  "start_url": "/forge-workout/index.html",
+  "scope": "/forge-workout/",
   "display": "standalone",
   "background_color": "#111111",
   "theme_color": "#111111",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23111'/><text x='96' y='130' text-anchor='middle' font-size='100' font-family='system-ui'>🔥</text></svg>",
+      "src": "https://handsomejackoff.github.io/forge-workout/icon.png",
       "sizes": "192x192",
-      "type": "image/svg+xml"
+      "type": "image/png"
     }
   ]
 }
